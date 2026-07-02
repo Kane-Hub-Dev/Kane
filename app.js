@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = 'KANE_V4_MOBILE_NAV_ICON_2026_07_02';
+  const APP_VERSION = 'KANE_V5_ACTION_REMINDER_ENGINE_2026_07_02';
   const STORAGE_KEY = 'htbControlRoomProV2';
   const $ = (id) => document.getElementById(id);
   const todayKey = () => new Date().toISOString().slice(0, 10);
@@ -53,6 +53,11 @@
     { id: 'thumb', label: 'Thumbnail + SEO', note: 'Clickable but true' },
     { id: 'publish', label: 'Publish / schedule', note: '2 videos every week' },
   ];
+
+  const DEFAULT_REMINDER_LEADS = [15, 5, 0];
+  const REMINDER_TICK_MS = 20000;
+  let reminderLoop = null;
+
 
   const agendaTemplates = {
     class: [
@@ -112,10 +117,13 @@
   let toastTimer = null;
 
   function loadState() {
-    const fallback = { version: APP_VERSION, days: {}, settings: { mode: 'class' }, ideas: [], streak: 0, lastCompletedDate: '' };
+    const fallback = { version: APP_VERSION, days: {}, settings: { mode: 'class', reminderEngine: false, reminderLeads: [15, 5, 0] }, ideas: [], streak: 0, lastCompletedDate: '' };
     try {
       const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      return parsed && typeof parsed === 'object' ? { ...fallback, ...parsed } : fallback;
+      if (!parsed || typeof parsed !== 'object') return fallback;
+      parsed.settings = { ...fallback.settings, ...(parsed.settings || {}) };
+      if (!Array.isArray(parsed.settings.reminderLeads)) parsed.settings.reminderLeads = DEFAULT_REMINDER_LEADS;
+      return { ...fallback, ...parsed };
     } catch {
       return fallback;
     }
@@ -141,6 +149,8 @@
       };
       saveState();
     }
+    if (!state.days[key].notified) state.days[key].notified = {};
+    if (!state.days[key].completedAgenda) state.days[key].completedAgenda = {};
     return state.days[key];
   }
 
@@ -208,12 +218,15 @@
       const start = toMinutes(time);
       const isCurrent = now >= start && now < start + 45;
       const done = !!day.completedAgenda[time];
+      const leads = getReminderLeads().filter((lead) => lead > 0).sort((a, b) => b - a);
+      const reminderText = state.settings.reminderEngine ? `${leads.join('/')} min + start` : 'manual';
       return `<div class="agenda-item ${isCurrent ? 'current' : ''}">
         <div class="agenda-time">${time}</div>
         <label class="agenda-main">
           <input type="checkbox" data-agenda-time="${time}" ${done ? 'checked' : ''} aria-label="Mark ${escapeHTML(title)} done" />
           <span class="agenda-title">${escapeHTML(title)}</span>
           <span class="agenda-desc">${escapeHTML(desc)}</span>
+          <span class="reminder-mini">Reminder: ${escapeHTML(reminderText)}</span>
         </label>
         <span class="agenda-tag">${escapeHTML(tag)}</span>
       </div>`;
@@ -284,28 +297,158 @@
     $('reviewText').value = day.review || '';
   }
 
+  function getReminderLeads() {
+    const leads = state.settings.reminderLeads;
+    if (!Array.isArray(leads) || !leads.length) return [...DEFAULT_REMINDER_LEADS];
+    return [...new Set(leads.map(Number).filter((lead) => [15, 10, 5, 0].includes(lead)))]
+      .sort((a, b) => b - a);
+  }
+
+  function setReminderLeads(leads) {
+    state.settings.reminderLeads = [...new Set(leads.map(Number))].filter((lead) => [15, 10, 5, 0].includes(lead));
+    if (!state.settings.reminderLeads.length) state.settings.reminderLeads = [...DEFAULT_REMINDER_LEADS];
+    saveState();
+    renderReminderEngine();
+    renderAgenda();
+  }
+
+  function formatCountdown(minutes) {
+    if (minutes < 0) return 'now';
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h <= 0) return `${m} min`;
+    return `${h}h ${String(m).padStart(2, '0')}m`;
+  }
+
+  function getNextReminderCandidate() {
+    const agenda = agendaTemplates[state.settings.mode] || agendaTemplates.class;
+    const now = minutesNow();
+    const leads = getReminderLeads().slice().sort((a, b) => b - a);
+    const today = todayKey();
+    const candidates = [];
+
+    for (const [time, title, desc, tag] of agenda) {
+      const start = toMinutes(time);
+      for (const lead of leads) {
+        const fireAt = start - lead;
+        if (fireAt >= now) {
+          candidates.push({ date: today, time, title, desc, tag, lead, fireAt, start, inMinutes: fireAt - now });
+        }
+      }
+    }
+
+    if (!candidates.length && agenda[0]) {
+      const [time, title, desc, tag] = agenda[0];
+      const lead = leads[0] ?? 0;
+      const fireAt = 1440 + toMinutes(time) - lead;
+      candidates.push({ date: 'tomorrow', time, title, desc, tag, lead, fireAt, start: 1440 + toMinutes(time), inMinutes: fireAt - now });
+    }
+
+    return candidates.sort((a, b) => a.fireAt - b.fireAt)[0] || null;
+  }
+
+  function buildReminderMessage(item) {
+    if (!item) return { title: 'KANE reminder', body: 'Open your routine and execute the next action.' };
+    if (item.lead === 0) return { title: `Start now: ${item.title}`, body: `${item.time} • ${item.desc}` };
+    return { title: `In ${item.lead} minutes: ${item.title}`, body: `${item.time} • ${item.desc}` };
+  }
+
+  function renderReminderEngine() {
+    const status = $('reminderEngineStatus');
+    const next = $('reminderNextText');
+    const countdown = $('reminderCountdown');
+    if (!status || !next || !countdown) return;
+
+    const enabled = !!state.settings.reminderEngine;
+    status.textContent = enabled ? 'Running' : 'Off';
+    status.classList.toggle('on', enabled);
+    status.classList.toggle('off', !enabled);
+
+    document.querySelectorAll('.lead-toggle').forEach((btn) => {
+      btn.classList.toggle('active', getReminderLeads().includes(Number(btn.dataset.lead)));
+    });
+
+    const candidate = getNextReminderCandidate();
+    if (!candidate) {
+      next.textContent = 'No agenda actions found.';
+      countdown.textContent = '--:--';
+      return;
+    }
+    const label = candidate.date === 'tomorrow' ? 'Tomorrow' : 'Today';
+    next.textContent = candidate.lead === 0
+      ? `${label} ${candidate.time} — ${candidate.title}`
+      : `${label} ${candidate.time} — ${candidate.title} (${candidate.lead} min before)`;
+    countdown.textContent = formatCountdown(candidate.inMinutes);
+  }
+
   function startNotificationLoop() {
-    setInterval(() => {
+    if (reminderLoop) clearInterval(reminderLoop);
+    const tick = () => {
+      renderReminderEngine();
+      updateNextAction();
+      if (!state.settings.reminderEngine) return;
+
       const day = getDay();
       const agenda = agendaTemplates[state.settings.mode] || agendaTemplates.class;
       const now = minutesNow();
-      for (const [time, title, desc] of agenda) {
+      const positiveLeads = getReminderLeads().filter((lead) => lead > 0).sort((a, b) => a - b);
+      const sendStart = getReminderLeads().includes(0);
+
+      for (const [time, title, desc, tag] of agenda) {
         const start = toMinutes(time);
-        const key = `${todayKey()}-${time}`;
-        const beforeKey = `${key}-before`;
-        if (now === start - 10 && !day.notified[beforeKey]) {
-          notify(`In 10 minutes: ${title}`, desc);
-          day.notified[beforeKey] = true;
-          saveState();
+        const remaining = start - now;
+        const dueLead = positiveLeads.find((lead) => remaining > 0 && remaining <= lead);
+        if (dueLead) {
+          const beforeKey = `${todayKey()}-${time}-${dueLead}-before`;
+          if (!day.notified[beforeKey]) {
+            notify(`In ${dueLead} minutes: ${title}`, `${time} • ${desc}`);
+            day.notified[beforeKey] = true;
+            saveState();
+            break;
+          }
         }
-        if (now === start && !day.notified[key]) {
-          notify(`Start now: ${title}`, desc);
-          day.notified[key] = true;
-          saveState();
+        if (sendStart && now >= start && now < start + 8) {
+          const startKey = `${todayKey()}-${time}-start`;
+          if (!day.notified[startKey]) {
+            notify(`Start now: ${title}`, `${time} • ${desc}`);
+            day.notified[startKey] = true;
+            saveState();
+            break;
+          }
         }
       }
       renderAgenda();
-    }, 30000);
+    };
+    tick();
+    reminderLoop = setInterval(tick, REMINDER_TICK_MS);
+  }
+
+  async function enableReminderEngine() {
+    if (!('Notification' in window)) {
+      toast('This browser does not support notifications.');
+      return;
+    }
+    if (Notification.permission === 'default') await Notification.requestPermission();
+    if (Notification.permission !== 'granted') {
+      toast('Notifications are blocked. Allow them in browser settings first.');
+      return;
+    }
+    state.settings.reminderEngine = true;
+    saveState();
+    renderReminderEngine();
+    renderAgenda();
+    const next = getNextReminderCandidate();
+    const msg = buildReminderMessage(next);
+    toast('Action Reminder Engine is running.');
+    await notify('KANE V5 reminders started', msg.body);
+  }
+
+  function stopReminderEngine() {
+    state.settings.reminderEngine = false;
+    saveState();
+    renderReminderEngine();
+    renderAgenda();
+    toast('Action Reminder Engine stopped.');
   }
 
   async function notify(title, body) {
@@ -463,6 +606,20 @@
       await notify('KANE notifications enabled', 'Hi, Iragena — your routine can now remind you while the browser allows it.');
       toast(`Notification permission: ${Notification.permission}`);
     });
+    $('startReminderEngineBtn')?.addEventListener('click', enableReminderEngine);
+    $('stopReminderEngineBtn')?.addEventListener('click', stopReminderEngine);
+    $('testNextReminderBtn')?.addEventListener('click', async () => {
+      const next = getNextReminderCandidate();
+      const msg = buildReminderMessage(next);
+      await notify(msg.title, msg.body);
+      toast('Sent a test for the next scheduled reminder.');
+    });
+    document.querySelectorAll('.lead-toggle').forEach((btn) => btn.addEventListener('click', () => {
+      const lead = Number(btn.dataset.lead);
+      const current = getReminderLeads();
+      const next = current.includes(lead) ? current.filter((item) => item !== lead) : [...current, lead];
+      setReminderLeads(next);
+    }));
     $('testNotificationBtn').addEventListener('click', () => notify('Test notification', 'If you see this, local notification works.'));
     $('enablePushBtn').addEventListener('click', async () => {
       if (window.enableHTBPush) {
@@ -551,6 +708,7 @@
     renderVideoSteps();
     renderStats();
     updateScore();
+    renderReminderEngine();
   }
 
   async function boot() {
@@ -565,7 +723,7 @@
     startNotificationLoop();
     if (!localStorage.getItem('htbV2Seen')) {
       localStorage.setItem('htbV2Seen', 'yes');
-      toast('Hi, Iragena — stable mobile nav and app icon loaded.');
+      toast('Hi, Iragena — V5 Action Reminder Engine loaded.');
     }
   }
 

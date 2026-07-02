@@ -90,3 +90,25 @@ Commit message:
 ```text
 KANE V2 full upgrade
 ```
+
+
+## KANE V5 — Action Reminder Engine
+
+V5 adds a local reminder engine for agenda actions.
+
+What it does:
+- Reads the active mode: Class, Holiday, or Deep Work.
+- Shows the next reminder and countdown.
+- Sends local notifications 15 minutes before, 5 minutes before, and at the start time by default.
+- Allows toggling 15, 10, 5, and At start reminders.
+- Avoids repeating the same reminder twice in one day.
+
+Important truth:
+- Local reminders work best while KANE is open, installed, or kept in the browser background.
+- Android/Chrome may pause JavaScript if the app is fully closed for a long time.
+- Fully reliable closed-app scheduled notifications require Firebase Cloud Messaging plus a server scheduler or Cloud Function.
+
+After upload, open:
+https://kane-hub-dev.github.io/Kane/?v=5
+
+If old V4 appears, clear site data or uninstall/reinstall the PWA.

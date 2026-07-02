@@ -1,8 +1,8 @@
 {
-  "name": "KANE - Hi, Iragena",
+  "name": "KANE V5 - Hi, Iragena",
   "short_name": "KANE",
-  "description": "Daily routine PWA for university, How This Began video production, coding, sport, and discipline.",
-  "start_url": "./index.html?v=4",
+  "description": "Daily routine PWA with V5 action reminder engine for university, video production, coding, sport, and discipline.",
+  "start_url": "./index.html?v=5",
   "scope": "./",
   "display": "standalone",
   "background_color": "#07111f",

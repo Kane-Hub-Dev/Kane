@@ -268,3 +268,112 @@ body{
 @media(max-width:350px){
   .bottom-nav{width:calc(100% - 12px);gap:2px;padding:6px}.nav-btn{font-size:9.5px;border-radius:18px}.nav-btn .nav-icon{width:25px;height:25px}.nav-btn .nav-icon svg{width:19px;height:19px}
 }
+
+/* =========================================================
+   KANE V5 — Action Reminder Engine
+   Local pre-action reminders: 15/10/5 minutes + start time.
+========================================================= */
+.reminder-panel{
+  position:relative;
+  overflow:hidden;
+  border-color:rgba(0,212,166,.22);
+  background:linear-gradient(155deg,rgba(0,212,166,.11),rgba(255,255,255,.045) 52%,rgba(248,193,74,.08));
+}
+.reminder-panel:before{
+  content:"";
+  position:absolute;
+  right:-54px;
+  top:-58px;
+  width:150px;
+  height:150px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(0,212,166,.24),transparent 68%);
+  pointer-events:none;
+}
+.reminder-dashboard{
+  position:relative;
+  display:grid;
+  grid-template-columns:1.4fr .8fr;
+  gap:10px;
+  margin:12px 0;
+}
+.reminder-dashboard>div{
+  min-height:86px;
+  padding:14px;
+  border-radius:22px;
+  background:rgba(3,12,22,.34);
+  border:1px solid rgba(255,255,255,.09);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+.reminder-dashboard span{
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+}
+.reminder-dashboard strong{
+  display:block;
+  margin-top:7px;
+  font-size:15px;
+  line-height:1.28;
+  font-weight:1000;
+  letter-spacing:-.045em;
+  color:var(--text);
+}
+#reminderCountdown{
+  font-size:22px;
+  color:var(--gold);
+}
+.reminder-leads{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  margin:12px 0;
+}
+.lead-toggle{
+  min-height:42px;
+  border-radius:16px;
+  background:rgba(255,255,255,.055);
+  color:rgba(214,225,238,.78);
+  border:1px solid rgba(255,255,255,.08);
+  font-weight:1000;
+  letter-spacing:-.035em;
+}
+.lead-toggle.active{
+  background:linear-gradient(135deg,rgba(0,212,166,.94),rgba(34,242,198,.94));
+  color:#03120f;
+  box-shadow:0 12px 26px rgba(0,212,166,.20);
+}
+.mini-pill.on{
+  background:rgba(0,212,166,.18)!important;
+  color:var(--emerald2)!important;
+  border-color:rgba(0,212,166,.24)!important;
+}
+.mini-pill.off{
+  background:rgba(255,255,255,.07)!important;
+  color:var(--muted)!important;
+}
+.reminder-mini{
+  display:block;
+  width:max-content;
+  max-width:100%;
+  margin-top:6px;
+  padding:5px 8px;
+  border-radius:999px;
+  background:rgba(0,212,166,.10);
+  color:var(--emerald2);
+  border:1px solid rgba(0,212,166,.13);
+  font-size:10px;
+  font-weight:950;
+  letter-spacing:-.02em;
+}
+.reminder-actions{
+  grid-template-columns:1fr auto auto;
+}
+@media(max-width:390px){
+  .reminder-dashboard{grid-template-columns:1fr}
+  .reminder-leads{grid-template-columns:1fr 1fr}
+  .reminder-actions{grid-template-columns:1fr}
+}
