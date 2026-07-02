@@ -1,4 +1,4 @@
-const CACHE_NAME = 'htb-control-room-pro-v2-2026-07-02';
+const CACHE_NAME = 'kane-control-room-pro-v3-nav-2026-07-02';
 const ASSETS = [
   './',
   './index.html',

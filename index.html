@@ -4,22 +4,22 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#07111f" />
-  <meta name="description" content="How This Began Daily Control Room - Pro PWA routine, university, video production, coding, and discipline tracker." />
-  <title>HTB Control Room Pro</title>
+  <meta name="description" content="KANE Control Room Pro - personal daily discipline, university, video production, coding, and mission protection PWA." />
+  <title>KANE Control Room Pro</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icon-192.png" />
+  <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="apple-touch-icon" href="icon-192.png" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="app" class="phone-shell">
-    <header class="hero">
+    <header id="homeScreen" class="hero kane-screen">
       <div class="hero-top">
         <div class="brand">
-          <div class="brand-mark">HTB</div>
+          <div class="brand-mark">K</div>
           <div>
             <p id="todayLabel">Today</p>
-            <h1>Control Room Pro</h1>
+            <h1>KANE Control Room</h1>
           </div>
         </div>
         <button id="installBtn" class="icon-btn" type="button" title="Install app">⬇</button>
@@ -72,7 +72,7 @@
         </div>
       </section>
 
-      <section class="panel agenda-panel">
+      <section id="agendaScreen" class="panel agenda-panel kane-screen">
         <div class="section-head">
           <div>
             <small>Hour by hour</small>
@@ -94,7 +94,7 @@
         <div id="recoveredPlan" class="agenda-list"></div>
       </section>
 
-      <section class="panel">
+      <section id="focusScreen" class="panel kane-screen">
         <div class="section-head">
           <div>
             <small>Focus Sprint</small>
@@ -118,7 +118,7 @@
         </div>
       </section>
 
-      <section class="panel">
+      <section id="goalsScreen" class="panel kane-screen">
         <div class="section-head">
           <div>
             <small>How This Began</small>
@@ -173,7 +173,7 @@
         </div>
       </section>
 
-      <section class="panel">
+      <section id="statsScreen" class="panel kane-screen">
         <div class="section-head">
           <div>
             <small>Stats</small>
@@ -190,7 +190,7 @@
         <button id="saveReviewBtn" class="wide-btn" type="button">Save today review</button>
       </section>
 
-      <section class="panel setup-panel">
+      <section id="moreScreen" class="panel setup-panel kane-screen">
         <div class="section-head">
           <div>
             <small>Pro PWA</small>
@@ -206,6 +206,25 @@
         <textarea id="pushTokenBox" readonly placeholder="FCM token will appear here after Firebase setup."></textarea>
       </section>
     </main>
+
+
+    <nav class="bottom-nav" aria-label="KANE bottom navigation">
+      <button class="nav-btn active" data-target="homeScreen" type="button" aria-current="page">
+        <span class="nav-icon" aria-hidden="true">⌂</span><span>Home</span>
+      </button>
+      <button class="nav-btn" data-target="agendaScreen" type="button">
+        <span class="nav-icon" aria-hidden="true">▦</span><span>Agenda</span>
+      </button>
+      <button class="nav-btn" data-target="statsScreen" type="button">
+        <span class="nav-icon" aria-hidden="true">◉</span><span>Stats</span>
+      </button>
+      <button class="nav-btn" data-target="goalsScreen" type="button">
+        <span class="nav-icon" aria-hidden="true">◎</span><span>Goals</span>
+      </button>
+      <button class="nav-btn" data-target="moreScreen" type="button">
+        <span class="nav-icon" aria-hidden="true">☰</span><span>More</span>
+      </button>
+    </nav>
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>

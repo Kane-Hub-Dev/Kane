@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = 'HTB_CONTROL_ROOM_PRO_V2_2026_07_02';
+  const APP_VERSION = 'KANE_CONTROL_ROOM_PRO_V3_NAV_2026_07_02';
   const STORAGE_KEY = 'htbControlRoomProV2';
   const $ = (id) => document.getElementById(id);
   const todayKey = () => new Date().toISOString().slice(0, 10);
@@ -508,6 +508,41 @@
     });
   }
 
+
+
+  function initBottomNav() {
+    const navButtons = Array.from(document.querySelectorAll('.bottom-nav .nav-btn'));
+    const targets = navButtons.map((button) => document.getElementById(button.dataset.target)).filter(Boolean);
+    if (!navButtons.length || !targets.length) return;
+
+    function activate(targetId) {
+      navButtons.forEach((button) => {
+        const isActive = button.dataset.target === targetId;
+        button.classList.toggle('active', isActive);
+        if (isActive) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
+      });
+    }
+
+    navButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const target = document.getElementById(button.dataset.target);
+        if (!target) return;
+        activate(button.dataset.target);
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible?.target?.id) activate(visible.target.id);
+    }, { root: null, threshold: [0.22, 0.38, 0.55], rootMargin: '-18% 0px -58% 0px' });
+
+    targets.forEach((target) => observer.observe(target));
+  }
+
   function renderAll() {
     renderBig3();
     renderSocial();
@@ -524,6 +559,7 @@
     initInstallPrompt();
     bindEvents();
     initTimer();
+    initBottomNav();
     setMode(state.settings.mode || 'class');
     renderAll();
     startNotificationLoop();
