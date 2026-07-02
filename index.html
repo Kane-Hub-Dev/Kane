@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07111f" />
+  <meta name="description" content="How This Began Daily Control Room - Pro PWA routine, university, video production, coding, and discipline tracker." />
+  <title>HTB Control Room Pro</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app" class="phone-shell">
+    <header class="hero">
+      <div class="hero-top">
+        <div class="brand">
+          <div class="brand-mark">HTB</div>
+          <div>
+            <p id="todayLabel">Today</p>
+            <h1>Control Room Pro</h1>
+          </div>
+        </div>
+        <button id="installBtn" class="icon-btn" type="button" title="Install app">⬇</button>
+      </div>
+      <div class="hero-copy">
+        <span id="modeBadge" class="badge gold">Class Day</span>
+        <h2>Build your future quietly.</h2>
+        <p>University, 2 How This Began videos/week, coding, sport, sleep, and mission protection.</p>
+      </div>
+      <div class="score-card">
+        <div class="ring" id="scoreRing"><span id="scoreText">0%</span></div>
+        <div>
+          <strong>Today Execution</strong>
+          <p id="scoreSubtext">0 done • 0 left</p>
+          <small id="nextAction">Next action: loading...</small>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="panel control-panel">
+        <div class="section-head">
+          <div>
+            <small>Daily Mode</small>
+            <h3>Choose today’s operating system</h3>
+          </div>
+          <button id="resetDayBtn" class="ghost-btn" type="button">Reset</button>
+        </div>
+        <div class="segmented" role="tablist" aria-label="Day mode">
+          <button class="mode-tab active" data-mode="class" type="button">Class</button>
+          <button class="mode-tab" data-mode="holiday" type="button">Holiday</button>
+          <button class="mode-tab" data-mode="deep" type="button">Deep Work</button>
+        </div>
+        <div class="mode-note" id="modeNote">8:00–12:30 class, 14:00–17:00 class if lecture exists.</div>
+        <button id="classCancelledBtn" class="wide-btn amber" type="button">Afternoon class cancelled → create recovered time plan</button>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <small>Big 3</small>
+            <h3>Today must win</h3>
+          </div>
+          <span class="mini-pill" id="big3Progress">0/3</span>
+        </div>
+        <div id="big3List" class="check-list"></div>
+        <div class="inline-form">
+          <input id="big3Input" type="text" placeholder="Add one critical task" />
+          <button id="addBig3Btn" type="button">Add</button>
+        </div>
+      </section>
+
+      <section class="panel agenda-panel">
+        <div class="section-head">
+          <div>
+            <small>Hour by hour</small>
+            <h3>Smart agenda</h3>
+          </div>
+          <button id="notifyBtn" class="ghost-btn" type="button">Enable notifications</button>
+        </div>
+        <div id="agendaList" class="agenda-list"></div>
+      </section>
+
+      <section class="panel highlight-panel" id="recoveredPanel" hidden>
+        <div class="section-head">
+          <div>
+            <small>Recovered Time</small>
+            <h3>Do not waste the cancelled class</h3>
+          </div>
+          <button id="closeRecoveredBtn" class="ghost-btn" type="button">Close</button>
+        </div>
+        <div id="recoveredPlan" class="agenda-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <small>Focus Sprint</small>
+            <h3>Deep work timer</h3>
+          </div>
+          <span id="focusToday" class="mini-pill">0 min today</span>
+        </div>
+        <div class="timer-card">
+          <select id="focusMinutes">
+            <option value="25">25 min</option>
+            <option value="50">50 min</option>
+            <option value="90">90 min</option>
+          </select>
+          <input id="focusTask" type="text" placeholder="Working on: script, code, edit..." />
+          <div id="timerDisplay" class="timer-display">25:00</div>
+          <div class="timer-actions">
+            <button id="startTimerBtn" class="wide-btn" type="button">Start</button>
+            <button id="pauseTimerBtn" class="ghost-btn" type="button">Pause</button>
+            <button id="resetTimerBtn" class="ghost-btn" type="button">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <small>How This Began</small>
+            <h3>2 videos/week pipeline</h3>
+          </div>
+          <span id="videoProgress" class="mini-pill">0/2</span>
+        </div>
+        <div id="videoSteps" class="step-grid"></div>
+        <div class="inline-form">
+          <input id="videoTitleInput" type="text" placeholder="Next video title / idea" />
+          <button id="saveVideoIdeaBtn" type="button">Save</button>
+        </div>
+        <div id="savedIdeas" class="idea-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <small>Social Media</small>
+            <h3>Use it as a tool, not escape</h3>
+          </div>
+          <span class="mini-pill">YT • TK • X • WA</span>
+        </div>
+        <div id="socialRules" class="check-list"></div>
+      </section>
+
+      <section class="panel danger-panel">
+        <div class="section-head">
+          <div>
+            <small>Mission Protection</small>
+            <h3>Girls, alcohol, peer pressure, scrolling</h3>
+          </div>
+          <span id="protectionScore" class="mini-pill">0/5</span>
+        </div>
+        <p class="panel-note">Rule: this season is for building. No chasing, no useless hangouts, no alcohol, no late-night emotional chats.</p>
+        <div id="protectionList" class="check-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <small>Holiday Mode</small>
+            <h3>Stay introvert and productive</h3>
+          </div>
+          <button id="loadHolidayBtn" class="ghost-btn" type="button">Load</button>
+        </div>
+        <div class="holiday-grid">
+          <article><b>Morning</b><span>Sport + coding deep work</span></article>
+          <article><b>Midday</b><span>Research/script for HTB</span></article>
+          <article><b>Afternoon</b><span>Editing + university revision</span></article>
+          <article><b>Evening</b><span>Upload, clips, review, sleep</span></article>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <small>Stats</small>
+            <h3>Daily review</h3>
+          </div>
+          <button id="exportBtn" class="ghost-btn" type="button">Export</button>
+        </div>
+        <div class="stats-grid">
+          <div><strong id="streakValue">0</strong><span>day streak</span></div>
+          <div><strong id="focusValue">0</strong><span>focus min</span></div>
+          <div><strong id="disciplineValue">0%</strong><span>discipline</span></div>
+        </div>
+        <textarea id="reviewText" placeholder="What did I win today? What must improve tomorrow?"></textarea>
+        <button id="saveReviewBtn" class="wide-btn" type="button">Save today review</button>
+      </section>
+
+      <section class="panel setup-panel">
+        <div class="section-head">
+          <div>
+            <small>Pro PWA</small>
+            <h3>Push notification setup</h3>
+          </div>
+          <span id="pwaStatus" class="mini-pill">Ready</span>
+        </div>
+        <p class="panel-note">Local reminders work while the app/browser is active. Closed-app push notifications need Firebase Cloud Messaging configured in <code>firebase-client-config.js</code>.</p>
+        <div class="setup-actions">
+          <button id="testNotificationBtn" class="wide-btn" type="button">Test notification</button>
+          <button id="enablePushBtn" class="ghost-btn" type="button">Enable FCM push</button>
+        </div>
+        <textarea id="pushTokenBox" readonly placeholder="FCM token will appear here after Firebase setup."></textarea>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js" defer></script>
+  <script type="module" src="fcm-config.js"></script>
+</body>
+</html>
