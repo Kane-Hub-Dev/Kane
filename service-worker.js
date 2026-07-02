@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kane-control-room-pro-v3-nav-2026-07-02';
+const CACHE_NAME = 'kane-v4-mobile-nav-icon-2026-07-02';
 const ASSETS = [
   './',
   './index.html',
@@ -36,6 +36,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // App files should prefer network first so UI/style/icon updates appear quickly.
+  const url = new URL(request.url);
+  if (['style.css', 'app.js', 'manifest.json', 'icon-192.png', 'icon-512.png', 'badge-72.png', 'favicon.png'].some((name) => url.pathname.endsWith('/' + name))) {
+    event.respondWith(fetch(request).then((response) => {
+      const clone = response.clone();
+      caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+      return response;
+    }).catch(() => caches.match(request)));
+    return;
+  }
+
   event.respondWith(
     caches.match(request).then((cached) => cached || fetch(request).then((response) => {
       const clone = response.clone();
@@ -59,7 +70,7 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-  let payload = { title: 'HTB Control Room', body: 'Open your routine and execute the next action.' };
+  let payload = { title: 'KANE', body: 'Hi, Iragena — open your routine and execute the next action.' };
   try {
     if (event.data) payload = { ...payload, ...event.data.json() };
   } catch {
@@ -69,7 +80,7 @@ self.addEventListener('push', (event) => {
     body: payload.body,
     icon: './icon-192.png',
     badge: './badge-72.png',
-    tag: payload.tag || 'htb-control-room',
+    tag: payload.tag || 'kane-control-room',
     data: payload.url || './'
   }));
 });

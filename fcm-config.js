@@ -38,7 +38,7 @@ window.enableHTBPush = async function enableHTBPush() {
   const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration: registration });
 
   onMessage(messaging, (payload) => {
-    const title = payload?.notification?.title || 'HTB Control Room';
+    const title = payload?.notification?.title || 'KANE';
     const body = payload?.notification?.body || 'Open the app and execute your next action.';
     registration.showNotification(title, { body, icon: './icon-192.png', badge: './badge-72.png' });
   });

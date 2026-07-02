@@ -1,8 +1,8 @@
 {
-  "name": "KANE Control Room Pro",
-  "short_name": "HTB Room",
+  "name": "KANE - Hi, Iragena",
+  "short_name": "KANE",
   "description": "Daily routine PWA for university, How This Began video production, coding, sport, and discipline.",
-  "start_url": "./index.html?v=2",
+  "start_url": "./index.html?v=4",
   "scope": "./",
   "display": "standalone",
   "background_color": "#07111f",

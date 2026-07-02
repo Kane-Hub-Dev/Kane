@@ -18,7 +18,7 @@ if (firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('PASTE_')) {
   const messaging = firebase.messaging();
 
   messaging.onBackgroundMessage((payload) => {
-    const title = payload?.notification?.title || 'HTB Control Room';
+    const title = payload?.notification?.title || 'KANE';
     const body = payload?.notification?.body || 'Open your control room and execute the next action.';
     self.registration.showNotification(title, {
       body,

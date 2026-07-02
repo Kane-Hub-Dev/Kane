@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = 'KANE_CONTROL_ROOM_PRO_V3_NAV_2026_07_02';
+  const APP_VERSION = 'KANE_V4_MOBILE_NAV_ICON_2026_07_02';
   const STORAGE_KEY = 'htbControlRoomProV2';
   const $ = (id) => document.getElementById(id);
   const todayKey = () => new Date().toISOString().slice(0, 10);
@@ -319,7 +319,7 @@
     if (Notification.permission === 'granted') {
       const reg = await navigator.serviceWorker?.getRegistration();
       if (reg?.showNotification) {
-        await reg.showNotification(title, { body, icon: 'icon-192.png', badge: 'badge-72.png', tag: 'htb-control-room' });
+        await reg.showNotification(title, { body, icon: 'icon-192.png', badge: 'badge-72.png', tag: 'kane-control-room' });
       } else {
         new Notification(title, { body, icon: 'icon-192.png' });
       }
@@ -460,7 +460,7 @@
     });
     $('closeRecoveredBtn').addEventListener('click', () => $('recoveredPanel').hidden = true);
     $('notifyBtn').addEventListener('click', async () => {
-      await notify('HTB notifications enabled', 'Your control room can now remind you while the browser allows it.');
+      await notify('KANE notifications enabled', 'Hi, Iragena — your routine can now remind you while the browser allows it.');
       toast(`Notification permission: ${Notification.permission}`);
     });
     $('testNotificationBtn').addEventListener('click', () => notify('Test notification', 'If you see this, local notification works.'));
@@ -502,7 +502,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `htb-control-room-${todayKey()}.json`;
+      a.download = `kane-control-room-${todayKey()}.json`;
       a.click();
       URL.revokeObjectURL(url);
     });
@@ -565,7 +565,7 @@
     startNotificationLoop();
     if (!localStorage.getItem('htbV2Seen')) {
       localStorage.setItem('htbV2Seen', 'yes');
-      toast('New colors loaded: Midnight Navy + Emerald + Gold.');
+      toast('Hi, Iragena — stable mobile nav and app icon loaded.');
     }
   }
 

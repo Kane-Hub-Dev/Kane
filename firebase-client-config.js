@@ -1,4 +1,4 @@
-// Firebase Web Config for HTB Control Room Pro
+// Firebase Web Config for KANE
 // Replace these values with your Firebase project settings.
 // Do NOT put private server keys here.
 

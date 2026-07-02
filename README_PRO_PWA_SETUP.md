@@ -1,6 +1,6 @@
-# HTB Control Room Pro V2
+# KANE V2
 
-This is a fresh full final project for the How This Began Daily Control Room.
+This is a fresh full final project for the KANE.
 
 ## What changed in V2
 
@@ -88,5 +88,5 @@ Do not upload only `style.css`. Upload the whole V2 package. The visible content
 Commit message:
 
 ```text
-HTB Control Room Pro V2 full upgrade
+KANE V2 full upgrade
 ```
