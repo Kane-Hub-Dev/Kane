@@ -1,4 +1,4 @@
-// Firebase Web Config for KANE
+// Firebase Web Config for KANE V6
 // Replace these values with your Firebase project settings.
 // Do NOT put private server keys here.
 
@@ -11,6 +11,8 @@ export const firebaseConfig = {
   appId: "PASTE_YOUR_APP_ID"
 };
 
-// Firebase Cloud Messaging Web Push certificate key.
-// Firebase Console → Project Settings → Cloud Messaging → Web Push certificates.
+// Firebase Console → Project Settings → Cloud Messaging → Web Push certificates → Generate key pair.
 export const vapidKey = "PASTE_YOUR_VAPID_KEY";
+
+// Your GitHub Pages URL. Change this only if your repo/domain changes.
+export const defaultSiteUrl = "https://kane-hub-dev.github.io/Kane/";

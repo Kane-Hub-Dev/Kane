@@ -1,28 +1,36 @@
-# KANE V2
+# KANE V6 Firebase Push Scheduler Setup
 
-This is a fresh full final project for the KANE.
+V6 adds real Firebase push scheduling for KANE. V5 local reminders can work while the app is open/background. V6 uses Firebase Cloud Messaging plus Cloud Functions Scheduler so reminders can arrive even when KANE is not open.
 
-## What changed in V2
+## What V6 contains
 
-- New premium colors: Midnight Navy + Emerald + Gold.
-- Fresh `index.html`, not only CSS, so the visible content changes.
-- Class Day Mode: 8:00–12:30 and 14:00–17:00.
-- Afternoon Class Cancelled button with a recovered time plan.
-- Holiday Mode for coding, video production, sport, revision, and quiet introvert discipline.
-- Deep Work Mode.
-- Big 3 daily execution tracker.
-- Smart agenda with local reminders.
-- Focus Sprint timer.
-- How This Began 2 videos/week production pipeline.
-- Social Media Discipline for YouTube, TikTok, X, and WhatsApp.
-- Mission Protection Tracker: no alcohol, no chasing girls, no peer pressure, no random scrolling, phone away before sleep.
-- PWA install support.
-- Service worker with cache versioning so updates show faster.
-- Firebase Cloud Messaging ready files.
+- `index.html`, `style.css`, `app.js` — KANE app UI + V6 sync buttons.
+- `firebase-client-config.js` — paste Firebase Web Config + VAPID key here.
+- `firebase-messaging-sw.js` — background push receiver. Paste the same Firebase config here too.
+- `functions/index.js` — scheduled backend that checks your routine every 5 minutes and sends push notifications.
+- `functions/package.json` — backend dependencies.
+- `firebase.json` and `firestore.rules` — Firebase deploy configuration.
 
-## Files to upload to GitHub root
+## Step 1 — Firebase project
 
-Upload these files to the root of your repository and replace old files with the same names:
+1. Go to Firebase Console.
+2. Create/select a project.
+3. Add a Web App.
+4. Copy the Firebase Web Config.
+5. Open `firebase-client-config.js` and replace all `PASTE_...` values.
+6. Open `firebase-messaging-sw.js` and replace the same `PASTE_...` values.
+7. In Firebase Console → Project Settings → Cloud Messaging → Web Push certificates → Generate key pair.
+8. Copy that VAPID key into `firebase-client-config.js`.
+
+## Step 2 — Firestore
+
+1. Firebase Console → Firestore Database → Create database.
+2. Start in production mode if asked.
+3. Deploy the included rules with Firebase CLI later.
+
+## Step 3 — Upload front-end to GitHub
+
+Upload these files to your GitHub `Kane` repo and replace existing files:
 
 - `index.html`
 - `style.css`
@@ -35,80 +43,107 @@ Upload these files to the root of your repository and replace old files with the
 - `icon-192.png`
 - `icon-512.png`
 - `badge-72.png`
-
-You can keep old files like `README.md`, `firebase.json`, and `firestore.rules` if they are useful. But make sure the new `index.html` is the one in the root.
-
-## Important: why your old content may still show
-
-After uploading, open your live GitHub Pages URL and add `?v=2` at the end, for example:
-
-```text
-https://YOUR_USERNAME.github.io/YOUR_REPO/?v=2
-```
-
-If old content still appears:
-
-1. Open live site.
-2. Press `Ctrl + Shift + R`.
-3. Open DevTools → Application → Service Workers → Unregister.
-4. Application → Storage → Clear site data.
-5. Refresh again.
-6. Reinstall the PWA if you installed the old version.
-
-## Notification reality
-
-Local notifications can work while the app/browser is active and notification permission is granted.
-
-Closed-app push notifications need Firebase Cloud Messaging configured in:
-
-- `firebase-client-config.js`
-- `firebase-messaging-sw.js`
-
-You must paste the same Firebase Web Config in both files, and paste your Web Push VAPID key in `firebase-client-config.js`.
-
-## Firebase setup summary
-
-1. Create a Firebase project.
-2. Add a Web App in Firebase Project Settings.
-3. Copy the Firebase config into `firebase-client-config.js`.
-4. Copy the same Firebase config into `firebase-messaging-sw.js`.
-5. Go to Cloud Messaging → Web Push certificates.
-6. Generate/copy VAPID key.
-7. Paste VAPID key into `firebase-client-config.js`.
-8. Upload files to GitHub.
-9. Open GitHub Pages site over HTTPS.
-10. Click `Enable FCM push` and copy the token.
-
-To send automatic scheduled push notifications when the app is closed, you still need a backend/scheduler later, such as Firebase Cloud Functions or another server. This project is ready for that setup.
-
-## GitHub upload instruction
-
-Do not upload only `style.css`. Upload the whole V2 package. The visible content is mostly in `index.html`, and behavior is in `app.js`.
+- `favicon.png`
 
 Commit message:
 
-```text
-KANE V2 full upgrade
+```bash
+KANE V6 Firebase Push Scheduler
 ```
 
+Open:
 
-## KANE V5 — Action Reminder Engine
+```text
+https://kane-hub-dev.github.io/Kane/?v=6
+```
 
-V5 adds a local reminder engine for agenda actions.
+## Step 4 — Deploy Firebase Functions
 
-What it does:
-- Reads the active mode: Class, Holiday, or Deep Work.
-- Shows the next reminder and countdown.
-- Sends local notifications 15 minutes before, 5 minutes before, and at the start time by default.
-- Allows toggling 15, 10, 5, and At start reminders.
-- Avoids repeating the same reminder twice in one day.
+Cloud Functions scheduled jobs may require Firebase Blaze / pay-as-you-go billing. The scheduler runs every 5 minutes.
 
-Important truth:
-- Local reminders work best while KANE is open, installed, or kept in the browser background.
-- Android/Chrome may pause JavaScript if the app is fully closed for a long time.
-- Fully reliable closed-app scheduled notifications require Firebase Cloud Messaging plus a server scheduler or Cloud Function.
+Install Firebase CLI:
 
-After upload, open:
-https://kane-hub-dev.github.io/Kane/?v=5
+```bash
+npm install -g firebase-tools
+firebase login
+```
 
-If old V4 appears, clear site data or uninstall/reinstall the PWA.
+In the folder that contains `firebase.json` and `functions/`, run:
+
+```bash
+firebase use --add
+firebase deploy --only firestore:rules
+cd functions
+npm install
+cd ..
+firebase deploy --only functions
+```
+
+After deploy, Firebase will create a scheduled function named:
+
+```text
+sendKaneScheduledReminders
+```
+
+## Step 5 — Enable push on your phone/computer
+
+1. Open KANE from GitHub Pages.
+2. Install the PWA.
+3. Go to More → Firebase Push Scheduler setup.
+4. Click `Enable Firebase push`.
+5. Allow notifications.
+6. A token should appear in the text box.
+7. Click `Start Reminder Engine`.
+8. Click `Sync schedule`.
+
+## How to confirm it works
+
+### A. Confirm token saved
+
+Firebase Console → Firestore Database → `kaneDevices`.
+
+You should see one document with fields like:
+
+- `token`
+- `enabled: true`
+- `mode`
+- `reminderLeads`
+- `timezone`
+- `siteUrl`
+
+If you see this, the app has connected to Firebase correctly.
+
+### B. Confirm background receiver exists
+
+Open the app in Chrome and go to DevTools → Application → Service Workers. You should see:
+
+- `service-worker.js`
+- `firebase-messaging-sw.js`
+
+### C. Confirm scheduled function is running
+
+Firebase Console → Functions → `sendKaneScheduledReminders` → Logs.
+
+Or in terminal:
+
+```bash
+firebase functions:log --only sendKaneScheduledReminders
+```
+
+You should see logs like:
+
+```text
+KANE scheduler complete { checked: 1, sent: 1, skipped: 0 }
+```
+
+### D. Fast practical test
+
+Change your current mode to Deep Work, enable leads `5 min before` and `At start`, then wait near an action time from your schedule. Keep the app closed. Within the 5-minute scheduler window, Firebase should send the notification.
+
+## Important limits
+
+- V6 is much stronger than V5 because Firebase can wake the browser service worker with a push event.
+- Phone battery optimization/browser restrictions can still affect delivery, but FCM is the correct web method for closed-app push.
+- If token disappears or notification stops, click `Enable Firebase push` again and `Sync schedule`.
+- Do not put private server keys in GitHub. The public Firebase Web Config is okay; private admin credentials are handled by Cloud Functions automatically.
+

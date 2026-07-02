@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /kaneDevices/{deviceId} {
+      allow create, update: if request.resource.data.keys().hasOnly([
+        'token','enabled','mode','reminderLeads','timezone','siteUrl','userLabel','app','lastSyncReason','updatedAt','createdAt','lastPushAt','lastPushTitle','disabledReason'
+      ]);
+      allow read: if false;
+      allow delete: if false;
+    }
+    match /kaneSentReminders/{reminderId} {
+      allow read, write: if false;
+    }
+  }
+}

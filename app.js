@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = 'KANE_V5_ACTION_REMINDER_ENGINE_2026_07_02';
+  const APP_VERSION = 'KANE_V6_FIREBASE_PUSH_SCHEDULER_2026_07_02';
   const STORAGE_KEY = 'htbControlRoomProV2';
   const $ = (id) => document.getElementById(id);
   const todayKey = () => new Date().toISOString().slice(0, 10);
@@ -133,6 +133,22 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 
+  async function syncPushScheduleIfReady(reason = 'schedule-update') {
+    if (typeof window.syncKanePushSchedule !== 'function') return;
+    try {
+      await window.syncKanePushSchedule({
+        mode: state.settings.mode || 'class',
+        reminderLeads: getReminderLeads(),
+        reminderEngine: !!state.settings.reminderEngine,
+        reason,
+      });
+      const box = $('pushTokenBox');
+      if (box && box.value && !box.value.includes('Synced')) box.value = box.value + '\nSynced to Firebase scheduler.';
+    } catch (error) {
+      console.warn('Push schedule sync failed:', error);
+    }
+  }
+
   function getDay() {
     const key = todayKey();
     if (!state.days[key]) {
@@ -170,6 +186,7 @@
   function setMode(mode) {
     state.settings.mode = mode;
     saveState();
+    syncPushScheduleIfReady('mode-change');
     document.querySelectorAll('.mode-tab').forEach((btn) => btn.classList.toggle('active', btn.dataset.mode === mode));
     const notes = {
       class: '8:00–12:30 class, 14:00–17:00 class if lecture exists.',
@@ -308,6 +325,7 @@
     state.settings.reminderLeads = [...new Set(leads.map(Number))].filter((lead) => [15, 10, 5, 0].includes(lead));
     if (!state.settings.reminderLeads.length) state.settings.reminderLeads = [...DEFAULT_REMINDER_LEADS];
     saveState();
+    syncPushScheduleIfReady('lead-change');
     renderReminderEngine();
     renderAgenda();
   }
@@ -435,6 +453,7 @@
     }
     state.settings.reminderEngine = true;
     saveState();
+    await syncPushScheduleIfReady('engine-start');
     renderReminderEngine();
     renderAgenda();
     const next = getNextReminderCandidate();
@@ -443,9 +462,10 @@
     await notify('KANE V5 reminders started', msg.body);
   }
 
-  function stopReminderEngine() {
+  async function stopReminderEngine() {
     state.settings.reminderEngine = false;
     saveState();
+    await syncPushScheduleIfReady('engine-stop');
     renderReminderEngine();
     renderAgenda();
     toast('Action Reminder Engine stopped.');
@@ -623,11 +643,20 @@
     $('testNotificationBtn').addEventListener('click', () => notify('Test notification', 'If you see this, local notification works.'));
     $('enablePushBtn').addEventListener('click', async () => {
       if (window.enableHTBPush) {
-        const token = await window.enableHTBPush();
-        $('pushTokenBox').value = token || 'No token. Check Firebase config and browser console.';
+        const token = await window.enableHTBPush({
+          mode: state.settings.mode || 'class',
+          reminderLeads: getReminderLeads(),
+          reminderEngine: !!state.settings.reminderEngine,
+        });
+        $('pushTokenBox').value = token ? `FCM token saved to Firebase:\n${token}` : 'No token. Check Firebase config, VAPID key, permissions, and browser console.';
+        if (token) toast('Firebase push device is enabled and synced.');
       } else {
         toast('FCM module not ready. Check fcm-config.js.');
       }
+    });
+    $('syncPushScheduleBtn')?.addEventListener('click', async () => {
+      await syncPushScheduleIfReady('manual-sync');
+      toast('Schedule synced to Firebase. Check Firestore → kaneDevices.');
     });
     $('saveVideoIdeaBtn').addEventListener('click', () => {
       const text = $('videoTitleInput').value.trim();
@@ -723,7 +752,7 @@
     startNotificationLoop();
     if (!localStorage.getItem('htbV2Seen')) {
       localStorage.setItem('htbV2Seen', 'yes');
-      toast('Hi, Iragena — V5 Action Reminder Engine loaded.');
+      toast('Hi, Iragena — V6 Firebase Push Scheduler loaded.');
     }
   }
 

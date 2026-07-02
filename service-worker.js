@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kane-v5-action-reminder-engine-2026-07-02';
+const CACHE_NAME = 'kane-v6-action-reminder-engine-2026-07-02';
 const ASSETS = [
   './',
   './index.html',
